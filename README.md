@@ -8,6 +8,95 @@ exposes it through the
 plugin.  No Home Assistant, no dashboard, no web UI — just your inverter data
 right alongside CPU/network sensors in Plasma System Monitor.
 
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    SOLIS INVERTER (Hardware)                      │
+│  S6-EH1P6K-L-PRO  ──  Solar Panels  ──  Battery  ──  Grid       │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │ 5 min poll (HTTPS :13333)
+                       ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                  SolisCloud REST API (cloud)                      │
+│  POST /v1/api/inverterDetail   (HMAC-SHA1 signed)                │
+│  Returns: pac, psumOrgin, familyLoadPowerOrigin, backupPowerA,   │
+│           batteryCapacitySoc, eToday, allEnergyOriginal, ...      │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │ JSON response
+                       ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  ~/.config/solis2kde/config.yaml   ◄──  api_key / api_secret     │
+│                                                                   │
+│  ~/.local/bin/solis2kde.py  ─── systemd user service ────────── │
+│  │  (solis2kde.service, Wants=network-online.target)             │
+│  │  Restart=on-failure, RestartSec=30                            │
+│  │                                                               │
+│  │  Reads config, signs requests, parses JSON,                   │
+│  │  writes values atomically (.tmp + rename)                     │
+│  └──  Writes 9 files to /tmp/:                                   │
+│                                                                   │
+│  /tmp/solis_solar_w.txt         (W)                              │
+│  /tmp/solis_grid_w.txt          (W)  Grid Import                 │
+│  /tmp/solis_grid_import_w.txt   (W)  Grid Load                   │
+│  /tmp/solis_load_w.txt          (W)  Total consumption           │
+│  /tmp/solis_backup_w.txt        (W)  Essential circuits          │
+│  /tmp/solis_smart_w.txt         (W)  Non-essential (computed)    │
+│  /tmp/solis_battery_pct.txt     (%)                              │
+│  /tmp/solis_etoday_kwh.txt      (kWh)                            │
+│  /tmp/solis_etotal_kwh.txt      (kWh)                            │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │ file read (poll during update())
+                       ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  /usr/lib64/qt6/plugins/ksystemstats/ksystemstats_plugin.so      │
+│                                                                   │
+│  ksystemstats_custom_sensors plugin (built from source)           │
+│  Reads  ~/.config/customsensorrc  for sensor definitions          │
+│  Reads  /tmp/solis_*.txt  for current values                     │
+│  Exposes sensors to ksystemstats D-Bus interface                 │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │ native KDE sensor protocol
+                       ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              KDE Plasma 6 System Monitor (KSysGuard)              │
+│                                                                   │
+│  9 custom sensors appear alongside CPU/RAM/Network sensors        │
+│  Page → Edit → Add Sensor → "Custom Sensors" container            │
+│  Gauges, time-series graphs, facelets — full native support       │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### File Locations on Disk
+
+```
+~/.config/
+├── solis2kde/config.yaml        API credentials (mode 0600)
+├── customsensorrc               Plugin sensor definitions (mode 0600)
+└── systemd/user/solis2kde.service  systemd user unit
+
+~/.local/bin/solis2kde.py        Python daemon (mode 755)
+
+/usr/lib64/qt6/plugins/ksystemstats/
+└── ksystemstats_plugin.so       KF6 System Stats plugin (built from source)
+
+/tmp/solis_*.txt                 9 sensor value files (written atomically)
+```
+
+### Data Flow
+
+```
+solis2kde.py (daemon)                         ksystemstats (KDE daemon)
+────────────────────────                      ────────────────────────
+while True:                                   on update():
+    sign request with HMAC-SHA1                   for each sensor:
+    POST /v1/api/inverterDetail                       open file
+    parse JSON                                        readLine()
+    for each field in FIELD_MAP:                      parseFloat()
+        write(tmp → rename to /tmp/solis_*)           setValue()
+    sleep(poll_interval)                          emit change to D-Bus
+```
+
 ## Sensors
 
 | Sensor           | File                             | Unit  | Source                                |
