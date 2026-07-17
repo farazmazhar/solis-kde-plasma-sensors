@@ -1,0 +1,62 @@
+# ksystemstats_custom_sensors plugin configuration
+#
+# Grid power handling:
+#   SolisCloud psumOrgin returns signed power (W):
+#     positive = export (selling), negative = import (buying)
+#   KDE sensors are scalar, so the daemon writes |value|.
+#   Direction is logged separately.
+#   If your API has separate import/export fields, edit FIELD_MAP.
+
+[Sensor]
+id=solis_solar
+name=Solar Generation
+file=/tmp/solis_solar_w.txt
+unit=UnitWatt
+
+[Sensor]
+id=solis_grid
+name=Grid Import
+file=/tmp/solis_grid_w.txt
+unit=UnitWatt
+
+[Sensor]
+id=solis_load
+name=Load Consumption
+file=/tmp/solis_load_w.txt
+unit=UnitWatt
+
+[Sensor]
+id=solis_battery
+name=Battery SOC
+file=/tmp/solis_battery_pct.txt
+unit=UnitPercent
+
+[Sensor]
+id=solis_etoday
+name=Energy Today
+file=/tmp/solis_etoday_kwh.txt
+unit=UnitKiloWattHour
+
+[Sensor]
+id=solis_etotal
+name=Total Energy
+file=/tmp/solis_etotal_kwh.txt
+unit=UnitKiloWattHour
+
+[Sensor]
+id=solis_grid_import
+name=Grid Load
+file=/tmp/solis_grid_import_w.txt
+unit=UnitWatt
+
+[Sensor]
+id=solis_backup
+name=Backup Load
+file=/tmp/solis_backup_w.txt
+unit=UnitWatt
+
+[Sensor]
+id=solis_smart
+name=Smart Load
+file=/tmp/solis_smart_w.txt
+unit=UnitWatt
