@@ -12,30 +12,30 @@ right alongside CPU/network sensors in Plasma System Monitor.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                    SOLIS INVERTER (Hardware)                      │
-│  S6-EH1P6K-L-PRO  ──  Solar Panels  ──  Battery  ──  Grid       │
+│                    SOLIS INVERTER (Hardware)                     │
+│  S6-EH1P6K-L-PRO  ──  Solar Panels  ──  Battery  ──  Grid        │
 └──────────────────────┬───────────────────────────────────────────┘
                        │ 5 min poll (HTTPS :13333)
                        ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                  SolisCloud REST API (cloud)                      │
+│                  SolisCloud REST API (cloud)                     │
 │  POST /v1/api/inverterDetail   (HMAC-SHA1 signed)                │
 │  Returns: pac, psumOrgin, familyLoadPowerOrigin, backupPowerA,   │
-│           batteryCapacitySoc, eToday, allEnergyOriginal, ...      │
+│           batteryCapacitySoc, eToday, allEnergyOriginal, ...     │
 └──────────────────────┬───────────────────────────────────────────┘
                        │ JSON response
                        ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │  ~/.config/solis2kde/config.yaml   ◄──  api_key / api_secret     │
-│                                                                   │
-│  ~/.local/bin/solis2kde.py  ─── systemd user service ────────── │
+│                                                                  │
+│  ~/.local/bin/solis2kde.py  ─── systemd user service ──────────  │
 │  │  (solis2kde.service, Wants=network-online.target)             │
 │  │  Restart=on-failure, RestartSec=30                            │
 │  │                                                               │
 │  │  Reads config, signs requests, parses JSON,                   │
 │  │  writes values atomically (.tmp + rename)                     │
 │  └──  Writes 9 files to /tmp/:                                   │
-│                                                                   │
+│                                                                  │
 │  /tmp/solis_solar_w.txt         (W)                              │
 │  /tmp/solis_grid_w.txt          (W)  Grid Import                 │
 │  /tmp/solis_grid_import_w.txt   (W)  Grid Load                   │
@@ -50,20 +50,20 @@ right alongside CPU/network sensors in Plasma System Monitor.
                        ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │  /usr/lib64/qt6/plugins/ksystemstats/ksystemstats_plugin.so      │
-│                                                                   │
-│  ksystemstats_custom_sensors plugin (built from source)           │
-│  Reads  ~/.config/customsensorrc  for sensor definitions          │
+│                                                                  │
+│  ksystemstats_custom_sensors plugin (built from source)          │
+│  Reads  ~/.config/customsensorrc  for sensor definitions         │
 │  Reads  /tmp/solis_*.txt  for current values                     │
 │  Exposes sensors to ksystemstats D-Bus interface                 │
 └──────────────────────┬───────────────────────────────────────────┘
                        │ native KDE sensor protocol
                        ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│              KDE Plasma 6 System Monitor (KSysGuard)              │
-│                                                                   │
-│  9 custom sensors appear alongside CPU/RAM/Network sensors        │
-│  Page → Edit → Add Sensor → "Custom Sensors" container            │
-│  Gauges, time-series graphs, facelets — full native support       │
+│              KDE Plasma 6 System Monitor (KSysGuard)             │
+│                                                                  │
+│  9 custom sensors appear alongside CPU/RAM/Network sensors       │
+│  Page → Edit → Add Sensor → "Custom Sensors" container           │
+│  Gauges, time-series graphs, facelets — full native support      │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
