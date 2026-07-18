@@ -1,5 +1,12 @@
 # solis-kde-plasma-sensors
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12+-blue?logo=python)](https://python.org)
+[![Platform](https://img.shields.io/badge/platform-Fedora%2040%2B%20%7C%20KDE%20Plasma%206-blue?logo=fedora)](https://fedoraproject.org)
+[![GitHub last commit](https://img.shields.io/github/last-commit/farazmazhar/solis-kde-plasma-sensors?logo=github)](https://github.com/farazmazhar/solis-kde-plasma-sensors)
+[![GitHub release](https://img.shields.io/github/v/release/farazmazhar/solis-kde-plasma-sensors?include_prereleases&logo=github)](https://github.com/farazmazhar/solis-kde-plasma-sensors/releases)
+[![SolisCloud](https://img.shields.io/badge/API-SolisCloud-orange)](https://www.soliscloud.com)
+
 Solis inverter real-time data as native KDE System Monitor sensors.
 
 Fetches data from the SolisCloud REST API (`inverterDetail` endpoint) and
